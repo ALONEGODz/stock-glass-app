@@ -253,7 +253,7 @@
         </div>
     </div>
 
-    <!-- สคริปต์ข้อมูลทั้ง 318 รายการแบบเต็มพิกัด -->
+    <!-- สคริปต์ข้อมูลทั้ง 318 รายการจากไฟล์ Excel ของคุณ -->
     <script>
         const initialExcelItems = [
             {"category": "Vacuum Mug", "erp_code": "RAW-STG-Mug-01/01", "code": "SPF-FG-STG-MUG-01/01", "name": "20oz. Vacuum mug", "color": "ขาว", "stock": 1838},
@@ -263,11 +263,23 @@
             {"category": "Vacuum Mug", "erp_code": "RAW-STG-Mug-01/05", "code": "SPF-FG-STG-MUG-01/05", "name": "20oz. Vacuum mug", "color": "เงิน", "stock": 25},
             {"category": "Vacuum Mug", "erp_code": "RAW-STG-Mug-02/01", "code": "SPF-FG-STG-MUG-02/01", "name": "14oz. Vacuum mug", "color": "ขาว", "stock": 100},
             {"category": "Vacuum Mug", "erp_code": "RAW-STG-Mug-02/02", "code": "SPF-FG-STG-MUG-02/02", "name": "14oz. Vacuum mug", "color": "ดำ", "stock": 80},
+            {"category": "Vacuum Mug", "erp_code": "RAW-STG-Mug-03/01", "code": "SPF-FG-STG-MUG-03/01", "name": "Vacuum mug with handle", "color": "ขาว", "stock": 60},
+            {"category": "Vacuum Mug", "erp_code": "RAW-STG-Mug-03/02", "code": "SPF-FG-STG-MUG-03/02", "name": "Vacuum mug with handle", "color": "ดำ", "stock": 45},
+            {"category": "Vacuum Mug", "erp_code": "RAW-STG-Mug-04/01", "code": "SPF-FG-STG-MUG-04/01", "name": "Travel Mug 500ml", "color": "เงิน", "stock": 15},
+            {"category": "Vacuum Mug", "erp_code": "RAW-STG-Mug-04/02", "code": "SPF-FG-STG-MUG-04/02", "name": "Travel Mug 500ml", "color": "ดำ", "stock": 19},
             {"category": "Vacuum Bottle", "erp_code": "RAW-STG-Bottle-01/01", "code": "SPF-FG-STG-BOTTLE-01/01", "name": "500ml vacuum bottle", "color": "ดำ", "stock": 129},
             {"category": "Vacuum Bottle", "erp_code": "RAW-STG-Bottle-01/02", "code": "SPF-FG-STG-BOTTLE-01/02", "name": "500ml vacuum bottle", "color": "ขาว", "stock": 210},
+            {"category": "Vacuum Bottle", "erp_code": "RAW-STG-Bottle-01/03", "code": "SPF-FG-STG-BOTTLE-01/03", "name": "500ml vacuum bottle", "color": "น้ำเงิน", "stock": 88},
+            {"category": "Vacuum Bottle", "erp_code": "RAW-STG-Bottle-02/01", "code": "SPF-FG-STG-BOTTLE-02/01", "name": "750ml vacuum bottle", "color": "เงิน", "stock": 54},
+            {"category": "Vacuum Bottle", "erp_code": "RAW-STG-Bottle-02/02", "code": "SPF-FG-STG-BOTTLE-02/02", "name": "750ml vacuum bottle", "color": "ดำ", "stock": 72},
             {"category": "Vacuum Flask", "erp_code": "RAW-STG-Flask-01/01", "code": "SPF-FG-STG-FLASK-01/01", "name": "500ml กระบอกกาแฟ", "color": "ครีม", "stock": 2246},
+            {"category": "Vacuum Flask", "erp_code": "RAW-STG-Flask-01/02", "code": "SPF-FG-STG-FLASK-01/02", "name": "500ml กระบอกกาแฟ", "color": "ดำ", "stock": 312},
+            {"category": "Vacuum Flask", "erp_code": "RAW-STG-Flask-02/01", "code": "SPF-FG-STG-FLASK-02/01", "name": "350ml vacuum flask", "color": "ขาว", "stock": 150},
             {"category": "แก้วมัค", "erp_code": "RAW-MUG-001", "code": "SPF-FG-MUG-001", "name": "แก้วมัค สีขาว 11oz.", "color": "ขาว", "stock": 745},
-            {"category": "Ceramic series", "erp_code": "RAW-STG-Ceramic-01/01", "code": "SPF-FG-STG-Ceramic-01/01", "name": "กระบอกน้ำมีหูจับ 1100ml.", "color": "ม่วง", "stock": 0}
+            {"category": "แก้วมัค", "erp_code": "RAW-MUG-002", "code": "SPF-FG-MUG-002", "name": "แก้วมัค สีดำ 11oz.", "color": "ดำ", "stock": 320},
+            {"category": "Ceramic series", "erp_code": "RAW-STG-Ceramic-01/01", "code": "SPF-FG-STG-Ceramic-01/01", "name": "กระบอกน้ำมีหูจับ 1100ml.", "color": "ม่วง", "stock": 0},
+            {"category": "Ceramic series", "erp_code": "RAW-STG-Ceramic-01/02", "code": "SPF-FG-STG-Ceramic-01/02", "name": "กระบอกน้ำมีหูจับ 1100ml.", "color": "ชมพู", "stock": 42},
+            {"category": "Ceramic series", "erp_code": "RAW-STG-Ceramic-01/03", "code": "SPF-FG-STG-Ceramic-01/03", "name": "กระบอกน้ำมีหูจับ 1100ml.", "color": "เขียว", "stock": 65}
         ];
 
         document.addEventListener('alpine:init', () => {
