@@ -152,7 +152,7 @@
                             <tr>
                                 <td colspan="7" class="py-12 text-center text-slate-400">
                                     <i class="fa-solid fa-box-open text-3xl mb-2"></i>
-                                    <p>ยังไม่มีข้อมูลในระบบ (คลิก "เพิ่มสินค้าใหม่" ด้านบนเพื่อเริ่มใช้งาน)</p>
+                                    <p>ไม่พบรายการสินค้า</p>
                                 </td>
                             </tr>
                         </template>
@@ -238,11 +238,13 @@
         </div>
     </div>
 
-    <!-- สคริปต์ Alpine.js -->
+    <!-- สคริปต์ Alpine.js และฝังข้อมูล 318 รายการจากไฟล์ Excel -->
     <script>
+        const initialExcelItems = ${json_data};
+
         document.addEventListener('alpine:init', () => {
             Alpine.data('stockApp', () => ({
-                items: [],
+                items: initialExcelItems,
                 searchQuery: '',
                 selectedCategory: '',
                 categories: ['Vacuum Mug', 'Vacuum Bottle', 'Vacuum Flask', 'แก้วมัค', 'Ceramic series'],
@@ -257,8 +259,19 @@
                 adjustQty: 1,
 
                 init() {
-                    window.addEventListener('firebase-data-loaded', (e) => {
-                        this.items = e.detail;
+                    // รับข้อมูล Real-time อัปเดตจาก Firebase มาประสานกัน
+                    window.addEventListener('firebase-data-update', (e) => {
+                        const cloudData = e.detail;
+                        if (cloudData && cloudData.length > 0) {
+                            cloudData.forEach(cloudItem => {
+                                const index = this.items.findIndex(i => i.code === cloudItem.code);
+                                if (index !== -1) {
+                                    this.items[index].stock = cloudItem.stock;
+                                } else {
+                                    this.items.unshift(cloudItem);
+                                }
+                            });
+                        }
                     });
                 },
 
@@ -293,11 +306,18 @@
                 },
                 triggerSave() {
                     window.dispatchEvent(new CustomEvent('save-item', { detail: { ...this.form } }));
+                    const index = this.items.findIndex(i => i.code === this.form.code);
+                    if (index !== -1) {
+                        this.items[index] = { ...this.form };
+                    } else {
+                        this.items.unshift({ ...this.form });
+                    }
                     this.showModal = false;
                 },
                 triggerDelete(item) {
                     if (confirm(`คุณต้องการลบสินค้า "${item.name} (${item.color})" ใช่หรือไม่?`)) {
                         window.dispatchEvent(new CustomEvent('delete-item', { detail: { code: item.code } }));
+                        this.items = this.items.filter(i => i.code !== item.code);
                     }
                 },
                 triggerAdjust() {
@@ -306,6 +326,10 @@
                         return;
                     }
                     const amount = this.adjustType === 'in' ? parseInt(this.adjustQty) : -parseInt(this.adjustQty);
+                    const index = this.items.findIndex(i => i.code === this.adjustItem.code);
+                    if (index !== -1) {
+                        this.items[index].stock = Math.max(0, this.items[index].stock + amount);
+                    }
                     window.dispatchEvent(new CustomEvent('adjust-stock', { 
                         detail: { code: this.adjustItem.code, amount: amount } 
                     }));
@@ -315,10 +339,10 @@
         });
     </script>
 
-    <!-- สคริปต์ Firebase ดึงข้อมูลตรงจาก Cloud -->
+    <!-- สคริปต์ Firebase อัตโนมัติและจัดการ Cloud Sync -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc, increment, getDocs } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA1Azn_bhk34_kTci5OIW01aR4-JsS8rJs",
@@ -334,15 +358,34 @@
         const db = getFirestore(app);
         const inventoryCol = collection(db, "glass_inventory");
 
-        // ดึงข้อมูลแบบ Real-time จาก Firebase
-        onSnapshot(inventoryCol, (snapshot) => {
-            let fetchedItems = [];
-            snapshot.forEach((doc) => {
-                fetchedItems.push(doc.data());
+        // ตรวจสอบและอัปโหลดข้อมูล 318 รายการขึ้น Cloud อัตโนมัติหากฐานข้อมูลยังว่าง
+        async function autoSeedDatabase() {
+            try {
+                const snapshot = await getDocs(inventoryCol);
+                if (snapshot.empty) {
+                    console.log("Seeding initial 318 items to Firestore...");
+                    for (let item of initialExcelItems) {
+                        await setDoc(doc(db, "glass_inventory", item.code), item);
+                    }
+                    console.log("Seeding completed!");
+                }
+            } catch (err) {
+                console.error("Auto-seed error:", err);
+            }
+        }
+
+        autoSeedDatabase().then(() => {
+            onSnapshot(inventoryCol, (snapshot) => {
+                let fetchedItems = [];
+                snapshot.forEach((doc) => {
+                    fetchedItems.push(doc.data());
+                });
+                if (fetchedItems.length > 0) {
+                    window.dispatchEvent(new CustomEvent('firebase-data-update', { detail: fetchedItems }));
+                }
+            }, (error) => {
+                console.error("Firebase Snapshot Error:", error);
             });
-            window.dispatchEvent(new CustomEvent('firebase-data-loaded', { detail: fetchedItems }));
-        }, (error) => {
-            console.error("Firebase Error:", error);
         });
 
         window.addEventListener('save-item', async (e) => {
