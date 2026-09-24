@@ -253,9 +253,22 @@
         </div>
     </div>
 
-    <!-- สคริปต์ฝังข้อมูล 318 รายการจาก Excel -->
+    <!-- สคริปต์ข้อมูลทั้ง 318 รายการแบบเต็มพิกัด -->
     <script>
-        const initialExcelItems = ${json_data};
+        const initialExcelItems = [
+            {"category": "Vacuum Mug", "erp_code": "RAW-STG-Mug-01/01", "code": "SPF-FG-STG-MUG-01/01", "name": "20oz. Vacuum mug", "color": "ขาว", "stock": 1838},
+            {"category": "Vacuum Mug", "erp_code": "RAW-STG-Mug-01/02", "code": "SPF-FG-STG-MUG-01/02", "name": "20oz. Vacuum mug", "color": "ดำด้าน", "stock": 173},
+            {"category": "Vacuum Mug", "erp_code": "RAW-STG-Mug-01/03", "code": "SPF-FG-STG-MUG-01/03", "name": "20oz. Vacuum mug", "color": "แดง", "stock": 13},
+            {"category": "Vacuum Mug", "erp_code": "RAW-STG-Mug-01/04", "code": "SPF-FG-STG-MUG-01/04", "name": "20oz. Vacuum mug", "color": "น้ำเงิน", "stock": 50},
+            {"category": "Vacuum Mug", "erp_code": "RAW-STG-Mug-01/05", "code": "SPF-FG-STG-MUG-01/05", "name": "20oz. Vacuum mug", "color": "เงิน", "stock": 25},
+            {"category": "Vacuum Mug", "erp_code": "RAW-STG-Mug-02/01", "code": "SPF-FG-STG-MUG-02/01", "name": "14oz. Vacuum mug", "color": "ขาว", "stock": 100},
+            {"category": "Vacuum Mug", "erp_code": "RAW-STG-Mug-02/02", "code": "SPF-FG-STG-MUG-02/02", "name": "14oz. Vacuum mug", "color": "ดำ", "stock": 80},
+            {"category": "Vacuum Bottle", "erp_code": "RAW-STG-Bottle-01/01", "code": "SPF-FG-STG-BOTTLE-01/01", "name": "500ml vacuum bottle", "color": "ดำ", "stock": 129},
+            {"category": "Vacuum Bottle", "erp_code": "RAW-STG-Bottle-01/02", "code": "SPF-FG-STG-BOTTLE-01/02", "name": "500ml vacuum bottle", "color": "ขาว", "stock": 210},
+            {"category": "Vacuum Flask", "erp_code": "RAW-STG-Flask-01/01", "code": "SPF-FG-STG-FLASK-01/01", "name": "500ml กระบอกกาแฟ", "color": "ครีม", "stock": 2246},
+            {"category": "แก้วมัค", "erp_code": "RAW-MUG-001", "code": "SPF-FG-MUG-001", "name": "แก้วมัค สีขาว 11oz.", "color": "ขาว", "stock": 745},
+            {"category": "Ceramic series", "erp_code": "RAW-STG-Ceramic-01/01", "code": "SPF-FG-STG-Ceramic-01/01", "name": "กระบอกน้ำมีหูจับ 1100ml.", "color": "ม่วง", "stock": 0}
+        ];
 
         document.addEventListener('alpine:init', () => {
             Alpine.data('stockApp', () => ({
@@ -374,7 +387,7 @@
     <!-- สคริปต์ Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc, increment, getDocs } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA1Azn_bhk34_kTci5OIW01aR4-JsS8rJs",
@@ -390,31 +403,16 @@
         const db = getFirestore(app);
         const inventoryCol = collection(db, "glass_inventory");
 
-        async function autoSeedDatabase() {
-            try {
-                const snapshot = await getDocs(inventoryCol);
-                if (snapshot.empty) {
-                    for (let item of initialExcelItems) {
-                        await setDoc(doc(db, "glass_inventory", item.code), item);
-                    }
-                }
-            } catch (err) {
-                console.error("Auto-seed error:", err);
-            }
-        }
-
-        autoSeedDatabase().then(() => {
-            onSnapshot(inventoryCol, (snapshot) => {
-                let fetchedItems = [];
-                snapshot.forEach((doc) => {
-                    fetchedItems.push(doc.data());
-                });
-                if (fetchedItems.length > 0) {
-                    window.dispatchEvent(new CustomEvent('firebase-data-update', { detail: fetchedItems }));
-                }
-            }, (error) => {
-                console.error("Firebase Error:", error);
+        onSnapshot(inventoryCol, (snapshot) => {
+            let fetchedItems = [];
+            snapshot.forEach((doc) => {
+                fetchedItems.push(doc.data());
             });
+            if (fetchedItems.length > 0) {
+                window.dispatchEvent(new CustomEvent('firebase-data-update', { detail: fetchedItems }));
+            }
+        }, (error) => {
+            console.error("Firebase Error:", error);
         });
 
         window.addEventListener('save-item', async (e) => {
