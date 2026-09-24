@@ -42,7 +42,7 @@
     <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
         <div x-show="loading" class="text-center py-10" x-cloak>
             <i class="fa-solid fa-circle-notch fa-spin text-4xl text-indigo-500 mb-3"></i>
-            <p class="text-slate-500 mt-2">กำลังเชื่อมต่อฐานข้อมูลและโหลดสินค้า...</p>
+            <p class="text-slate-500 mt-2">กำลังซิงค์ข้อมูลสินค้าจาก Cloud...</p>
         </div>
 
         <div x-show="!loading" x-cloak>
@@ -158,7 +158,7 @@
                                 <tr>
                                     <td colspan="7" class="py-12 text-center text-slate-400">
                                         <i class="fa-solid fa-box-open text-3xl mb-2"></i>
-                                        <p>ยังไม่มีข้อมูลในฐานข้อมูล (กดปุ่มเพิ่มสินค้าได้เลย)</p>
+                                        <p>ไม่พบรายการสินค้า</p>
                                     </td>
                                 </tr>
                             </template>
@@ -179,35 +179,35 @@
             <form @submit.prevent="triggerSave" class="p-6 space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">หมวดหมู่สินค้า</label>
-                    <input type="text" x-model="form.category" required placeholder="เช่น Vacuum Mug, แก้วมัค" class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" x-model="form.category" required class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">รหัสสินค้า</label>
-                        <input type="text" x-model="form.code" required :disabled="isEditing" placeholder="เช่น SPF-FG-..." class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 disabled:opacity-50">
+                        <input type="text" x-model="form.code" required :disabled="isEditing" class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 disabled:opacity-50">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">รหัส ERP</label>
-                        <input type="text" x-model="form.erp_code" placeholder="เช่น RAW-STG-..." class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+                        <input type="text" x-model="form.erp_code" class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">ชื่อสินค้า / ขนาด</label>
-                    <input type="text" x-model="form.name" required placeholder="เช่น 20oz. Vacuum mug" class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" x-model="form.name" required class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">สี</label>
-                        <input type="text" x-model="form.color" placeholder="เช่น ขาว, ดำ" class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
+                        <input type="text" x-model="form.color" class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">จำนวนคงเหลือเริ่มต้น</label>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">จำนวนคงเหลือ</label>
                         <input type="number" x-model.number="form.stock" min="0" required class="w-full bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500">
                     </div>
                 </div>
                 <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
                     <button type="button" @click="showModal = false" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-200">ยกเลิก</button>
-                    <button type="submit" class="px-5 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-500">บันทึกไปที่ Cloud</button>
+                    <button type="submit" class="px-5 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-500">บันทึก</button>
                 </div>
             </form>
         </div>
@@ -223,7 +223,7 @@
             <div class="p-6 space-y-4">
                 <div>
                     <h4 class="font-bold text-slate-800 text-sm" x-text="adjustItem.name"></h4>
-                    <p class="text-xs text-slate-400" x-text="'รหัส: ' + adjustItem.code"></p>
+                    <p class="text-xs text-slate-400" x-text="'รหัส: ' + adjustItem.code + ' | สี: ' + adjustItem.color"></p>
                     <p class="text-xs font-semibold text-indigo-600 mt-1" x-text="'สต๊อกปัจจุบัน: ' + adjustItem.stock + ' ชิ้น'"></p>
                 </div>
                 <div>
@@ -239,7 +239,7 @@
                 </div>
                 <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
                     <button type="button" @click="showAdjustModal = false" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-200">ยกเลิก</button>
-                    <button type="button" @click="triggerAdjust" class="px-5 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-500">ยืนยันการปรับ</button>
+                    <button type="button" @click="triggerAdjust" class="px-5 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-500">ยืนยัน</button>
                 </div>
             </div>
         </div>
@@ -264,28 +264,21 @@
                 adjustType: 'in',
                 adjustQty: 1,
 
-                // รอรับข้อมูลจาก Firebase
                 init() {
                     window.addEventListener('firebase-data-loaded', (e) => {
                         this.items = e.detail;
                         this.loading = false;
                     });
-                    window.addEventListener('firebase-error', () => {
-                        this.loading = false;
-                    });
-                    window.addEventListener('close-modal', () => {
-                        this.showModal = false;
-                        this.showAdjustModal = false;
-                    });
                 },
 
-                get totalStock() { return this.items.reduce((sum, i) => sum + i.stock, 0); },
+                get totalStock() { return this.items.reduce((sum, i) => sum + (i.stock || 0), 0); },
                 get lowStockCount() { return this.items.filter(i => i.stock > 0 && i.stock < 20).length; },
                 get outOfStockCount() { return this.items.filter(i => i.stock === 0).length; },
                 get filteredItems() {
                     return this.items.filter(i => {
-                        const matchQuery = i.name.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
-                                           i.code.toLowerCase().includes(this.searchQuery.toLowerCase());
+                        const matchQuery = (i.name || '').toLowerCase().includes(this.searchQuery.toLowerCase()) || 
+                                           (i.code || '').toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                                           (i.color || '').toLowerCase().includes(this.searchQuery.toLowerCase());
                         const matchCat = this.selectedCategory === '' || i.category === this.selectedCategory;
                         return matchQuery && matchCat;
                     });
@@ -311,13 +304,13 @@
                     window.dispatchEvent(new CustomEvent('save-item', { detail: { ...this.form } }));
                 },
                 triggerDelete(item) {
-                    if (confirm(`คุณต้องการลบสินค้า "${item.name}" อย่างถาวรออกจาก Cloud ใช่หรือไม่?`)) {
+                    if (confirm(`คุณต้องการลบสินค้า "${item.name} (${item.color})" ใช่หรือไม่?`)) {
                         window.dispatchEvent(new CustomEvent('delete-item', { detail: { code: item.code } }));
                     }
                 },
                 triggerAdjust() {
                     if (this.adjustType === 'out' && this.adjustItem.stock < parseInt(this.adjustQty)) {
-                        alert("ไม่สามารถเบิกสินค้าได้เนื่องจากยอดสต๊อกคงเหลือไม่เพียงพอ!");
+                        alert("ยอดสต๊อกคงเหลือไม่เพียงพอสำหรับการจ่ายออก!");
                         return;
                     }
                     window.dispatchEvent(new CustomEvent('adjust-stock', { 
@@ -331,10 +324,10 @@
         });
     </script>
 
-    <!-- สคริปต์ Firebase -->
+    <!-- สคริปต์ Firebase และข้อมูลตั้งต้น 318 รายการ -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc, increment, getDocs } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA1Azn_bhk34_kTci5OIW01aR4-JsS8rJs",
@@ -350,31 +343,48 @@
         const db = getFirestore(app);
         const inventoryCol = collection(db, "glass_inventory");
 
-        // ดึงข้อมูล Real-time
-        onSnapshot(inventoryCol, (snapshot) => {
-            let fetchedItems = [];
-            snapshot.forEach((doc) => {
-                fetchedItems.push(doc.data());
+        // ข้อมูลตั้งต้น 318 รายการจากไฟล์ Excel ของคุณ
+        const initialExcelData = {json.dumps(all_items, ensure_ascii=False)};
+
+        // ฟังก์ชันตรวจสอบและอัปโหลดข้อมูล Excel อัตโนมัติหากฐานข้อมูลว่างเปล่า
+        async function seedDatabaseIfNeeded() {
+            try {
+                const snapshot = await getDocs(inventoryCol);
+                if (snapshot.empty) {
+                    console.log("Database is empty. Seeding 318 items from Excel...");
+                    for (let item of initialExcelData) {
+                        await setDoc(doc(db, "glass_inventory", item.code), item);
+                    }
+                    console.log("Seeding completed successfully!");
+                }
+            } catch (err) {
+                console.error("Error seeding database:", err);
+            }
+        }
+
+        seedDatabaseIfNeeded().then(() => {
+            // ดึงข้อมูล Real-time
+            onSnapshot(inventoryCol, (snapshot) => {
+                let fetchedItems = [];
+                snapshot.forEach((doc) => {
+                    fetchedItems.push(doc.data());
+                });
+                window.dispatchEvent(new CustomEvent('firebase-data-loaded', { detail: fetchedItems }));
+            }, (error) => {
+                console.error("Firebase Error:", error);
             });
-            // ส่งข้อมูลกลับไปที่หน้าจอ
-            window.dispatchEvent(new CustomEvent('firebase-data-loaded', { detail: fetchedItems }));
-        }, (error) => {
-            console.error("Firebase Error:", error);
-            window.dispatchEvent(new Event('firebase-error'));
         });
 
-        // บันทึกข้อมูล
         window.addEventListener('save-item', async (e) => {
             const formData = e.detail;
             try {
                 await setDoc(doc(db, "glass_inventory", formData.code), formData);
-                window.dispatchEvent(new Event('close-modal'));
+                document.querySelector('[x-data="stockApp()"]').__x.$data.showModal = false;
             } catch (error) {
                 console.error("Error saving:", error);
             }
         });
 
-        // ลบข้อมูล
         window.addEventListener('delete-item', async (e) => {
             try {
                 await deleteDoc(doc(db, "glass_inventory", e.detail.code));
@@ -383,14 +393,13 @@
             }
         });
 
-        // ปรับสต๊อก
         window.addEventListener('adjust-stock', async (e) => {
             try {
                 const docRef = doc(db, "glass_inventory", e.detail.code);
                 await updateDoc(docRef, {
                     stock: increment(e.detail.amount)
                 });
-                window.dispatchEvent(new Event('close-modal'));
+                document.querySelector('[x-data="stockApp()"]').__x.$data.showAdjustModal = false;
             } catch (error) {
                 console.error("Error adjusting:", error);
             }
