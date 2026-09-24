@@ -32,11 +32,8 @@
                 </div>
             </div>
             <div class="flex flex-wrap items-center gap-3">
-                <button @click="seedToCloud()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm flex items-center gap-2">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> ซิงค์ 318 รายการขึ้น Cloud
-                </button>
                 <button @click="openAddModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm flex items-center gap-2">
-                    <i class="fa-solid fa-plus"></i> เพิ่มสินค้า
+                    <i class="fa-solid fa-plus"></i> เพิ่มสินค้าใหม่
                 </button>
                 <button @click="exportCSV()" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm border border-slate-700 flex items-center gap-2">
                     <i class="fa-solid fa-download"></i> ส่งออก CSV
@@ -265,13 +262,11 @@
         </div>
     </div>
 
-    <!-- สคริปต์ Alpine.js และฝังข้อมูลครบ 318 รายการ -->
+    <!-- สคริปต์โหลดข้อมูล 318 รายการครบถ้วนทันที -->
     <script>
-        const initialExcelItems = ${full_json_str};
-
         document.addEventListener('alpine:init', () => {
             Alpine.data('stockApp', () => ({
-                items: initialExcelItems,
+                items: [],
                 searchQuery: '',
                 selectedCategory: '',
                 selectedStatus: '',
@@ -287,20 +282,8 @@
                 adjustQty: 1,
 
                 init() {
-                    window.addEventListener('firebase-data-update', (e) => {
-                        const cloudData = e.detail;
-                        if (cloudData && cloudData.length > 0) {
-                            cloudData.forEach(cloudItem => {
-                                const index = this.items.findIndex(i => i.code === cloudItem.code);
-                                if (index !== -1) {
-                                    this.items[index].stock = cloudItem.stock;
-                                    if (cloudItem.image) this.items[index].image = cloudItem.image;
-                                } else {
-                                    this.items.unshift(cloudItem);
-                                }
-                            });
-                        }
-                    });
+                    // โหลดข้อมูลพื้นฐานฉบับสมบูรณ์ 318 รายการจาก Excel ทันทีโดยไม่ต้องรอ Cloud
+                    this.items = ${full_json_str};
                 },
 
                 get totalStock() { return this.items.reduce((sum, i) => sum + (i.stock || 0), 0); },
@@ -379,12 +362,6 @@
                     }));
                     this.showAdjustModal = false;
                 },
-                seedToCloud() {
-                    if (confirm("ต้องการซิงค์ข้อมูลสินค้าทั้ง 318 รายการขึ้นสู่ Cloud Firebase ทันทีใช่หรือไม่?")) {
-                        window.dispatchEvent(new CustomEvent('force-seed', { detail: this.items }));
-                        alert("กำลังส่งข้อมูลขึ้น Cloud... รอสักครู่แล้วรีเฟรชหน้าเว็บครับ");
-                    }
-                },
                 exportCSV() {
                     let csv = '\uFEFFรหัสERP,รหัสสินค้า,ชื่อสินค้า/ขนาด,หมวดหมู่,สี,จำนวนคงเหลือ\n';
                     this.filteredItems.forEach(i => {
@@ -400,10 +377,10 @@
         });
     </script>
 
-    <!-- สคริปต์ Firebase -->
+    <!-- สคริปต์ Firebase ซิงค์ข้อมูล Real-time -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc, increment, getDocs } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA1Azn_bhk34_kTci5OIW01aR4-JsS8rJs",
@@ -419,43 +396,16 @@
         const db = getFirestore(app);
         const inventoryCol = collection(db, "glass_inventory");
 
-        // อัตโนมัติซิงค์ถ้าฐานข้อมูลยังว่าง
-        async function autoSeed() {
-            try {
-                const snapshot = await getDocs(inventoryCol);
-                if (snapshot.empty) {
-                    for (let item of initialExcelItems) {
-                        await setDoc(doc(db, "glass_inventory", item.code), item);
-                    }
+        // รับข้อมูลอัปเดตจาก Cloud แบบ Real-time
+        onSnapshot(inventoryCol, (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "modified" || change.type === "added") {
+                    const cloudData = change.doc.data();
+                    window.dispatchEvent(new CustomEvent('cloud-item-update', { detail: cloudData }));
                 }
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        autoSeed().then(() => {
-            onSnapshot(inventoryCol, (snapshot) => {
-                let fetchedItems = [];
-                snapshot.forEach((doc) => {
-                    fetchedItems.push(doc.data());
-                });
-                if (fetchedItems.length > 0) {
-                    window.dispatchEvent(new CustomEvent('firebase-data-update', { detail: fetchedItems }));
-                }
-            }, (error) => {
-                console.error("Firebase Error:", error);
             });
-        });
-
-        window.addEventListener('force-seed', async (e) => {
-            try {
-                for (let item of e.detail) {
-                    await setDoc(doc(db, "glass_inventory", item.code), item);
-                }
-                alert("อัปโหลดข้อมูลทั้ง 318 รายการขึ้น Cloud สำเร็จ!");
-            } catch (err) {
-                alert("เกิดข้อผิดพลาดในการซิงค์: " + err.message);
-            }
+        }, (error) => {
+            console.error("Firebase Error:", error);
         });
 
         window.addEventListener('save-item', async (e) => {
@@ -472,7 +422,8 @@
 
         window.addEventListener('adjust-stock', async (e) => {
             try {
-                await updateDoc(doc(db, "glass_inventory", e.detail.code), {
+                const docRef = doc(db, "glass_inventory", e.detail.code);
+                await updateDoc(docRef, {
                     stock: increment(e.detail.amount)
                 });
             } catch (error) { console.error(error); }
